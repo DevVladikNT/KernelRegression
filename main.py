@@ -32,7 +32,7 @@ bins_count = 10
 
 # Returns core value
 @lru_cache()
-def nuclear(r, type_val=core_type):
+def core(r, type_val=core_type):
     if type_val == 1:
         return 3/4 * (1 - r ** 2)
     elif type_val == 2:
@@ -53,12 +53,12 @@ def distance(x1, x2):
     return np.abs(x1 - x2)
 
 
-# The value of the nuclear regression at point xi
+# The value of the kernel regression at point xi
 def regression_result(xi, x_arr=x, y_arr=y, gamma_arr=np.ones(len(x))):
     upper_part = 0
     lower_part = 0
     for i in range(len(x_arr)):
-        k_val = nuclear(distance(xi, x_arr[i]) / h, core_type)
+        k_val = core(distance(xi, x_arr[i]) / h, core_type)
         upper_part += y_arr[i] * gamma_arr[i] * k_val
         lower_part += gamma_arr[i] * k_val
     return upper_part / lower_part
@@ -80,7 +80,7 @@ def main():
     x_nuclear = x_nuclear / len(x_nuclear)
     y_nuclear = []
     for x_cur in x_nuclear:
-        y_nuclear.append(nuclear(x_cur))
+        y_nuclear.append(core(x_cur))
     plt.plot(x_nuclear, y_nuclear)
     plt.title('Core')
     plt.xlabel('r')
@@ -92,7 +92,7 @@ def main():
     for xi in x:
         sum_i = 0
         for xj in x:
-            sum_i += nuclear((xi - xj) / h)
+            sum_i += core((xi - xj) / h)
         sum_i /= len(x) * h
         prob.append(sum_i)
     plt.hist(x, bins=bins_count, edgecolor='black', label='Data histogram')
@@ -103,19 +103,19 @@ def main():
     plt.legend()
     plt.show()
 
-    # Building a plot describing the nuclear regression
+    # Building a plot describing the kernel regression
     y_fact = []
     for i in range(len(x)):
         y_fact.append(regression_result(x[i]))
-    plt.plot(x, y_fact, label='Nuclear regression')
+    plt.plot(x, y_fact, label='Kernel regression')
     plt.plot(x, y, label='Real data')
-    plt.title(f'Nuclear regression, h={h}')
+    plt.title(f'Kernel regression, h={h}')
     plt.xlabel('x')
     plt.ylabel('f(x)')
     plt.legend()
     plt.show()
 
-    # Building a plot describing the weighted nuclear regression
+    # Building a plot describing the weighted kernel regression
     last_diff = 1000000
     gamma = np.ones(len(x))
     while True:
@@ -131,10 +131,10 @@ def main():
         last_diff = diff
         # We calculate new values of gamma coefficients
         for i in range(len(y_fact)):
-            gamma[i] = nuclear(np.abs(y_fact[i] - y[i]), gamma_core_type)
-    plt.plot(x, y_fact, label='Nuclear regression')
+            gamma[i] = core(np.abs(y_fact[i] - y[i]), gamma_core_type)
+    plt.plot(x, y_fact, label='Kernel regression')
     plt.plot(x, y, label='Real data')
-    plt.title(f'Weighted nuclear regression, h={h}')
+    plt.title(f'Weighted kernel regression, h={h}')
     plt.xlabel('x')
     plt.ylabel('f(x)')
     plt.legend()
@@ -144,19 +144,19 @@ def main():
     x_train = x[:int(predict * len(x))]
     y_train = y[:int(predict * len(y))]
     y_fact = []
-    # We calculate the values of nuclear regression in the training range
+    # We calculate the values of kernel regression in the training range
     for xi in x_train:
         y_fact.append(regression_result(xi, x_arr=x_train, y_arr=y_train))
     x_test = x[int(predict * len(x)):]
     y_test = []
     # We calculate the prediction on the test range
-    # using a nuclear regression built on the training range
+    # using a kernel regression built on the training range
     for xi in x_test:
         y_test.append(regression_result(xi, x_arr=x_train, y_arr=y_train))
-    plt.plot(x_train, y_fact, label='Nuclear regression')
+    plt.plot(x_train, y_fact, label='Kernel regression')
     plt.plot(x_test, y_test, label='Prediction')
     plt.plot(x, y, label='Real data')
-    plt.title(f'Prediction by nuclear regression, h={h}')
+    plt.title(f'Prediction by kernel regression, h={h}')
     plt.xlabel('x')
     plt.ylabel('f(x)')
     plt.legend()
